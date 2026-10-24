@@ -13,7 +13,7 @@ class Program():
         self.flag = 0
         self.last_f = 0
         self.start = 0
-        self.flag2 = False
+        self.last_time = False
         self.a = 0
         self.c = 0
     def Hands(self):
@@ -52,30 +52,38 @@ class Program():
         if len(self.hands) != 0:
             
                 
-            if self.fingers == [0,0,0,0,0] or self.fingers == [1,0,0,0,0] or self.fingers == [0,1,0,0,0] or self.fingers == [1,1,0,0,0]: 
+            if self.fingers == [0,0,0,0,0] or self.fingers == [1,0,0,0,0] or self.fingers == [0,1,0,0,0] or self.fingers == [1,1,0,0,0] or self.fingers == [0,1,1,0,0] or self.fingers == [1,1,1,0,0]: 
                 if self.flag == 0:
                     self.a1 = self.a
                     self.c1 = self.c
                     self.flag+=1
-                
-                                
+
+
+
                 if self.fingers == [0,1,0,0,0] or self.fingers == [1,1,0,0,0]:
-                    self.y = self.y + abs(self.x2-self.y2)/4
+                    self.y = self.y + abs(self.x2-self.y2)/3.5        
                     if self.last_f != self.fingers:
+                        mouse.click(button='left')
                         self.start = time.time()
-                        mouse.press(button='left')
-                        self.flag2 = True
-                        
-                else:
-                    
-                    if self.flag2 == True: 
-                        elapsed = time.time() - self.start 
-                        
-                        if elapsed < 0.5 : 
-                            mouse.click(button='left')
-                          
+                                        
+                    if time.time() - self.start > 0.3:
+                        if self.last_time <= 0.3:                     
+                            mouse.press(button='left')
+                    self.last_time = time.time() - self.start
+                                
+                elif self.fingers == [0,1,1,0,0]:
+                    if self.fingers != self.last_f:               
+                        self.y = self.y + abs(self.x2-self.y2)/3.5             
+                        mouse.click(button='left')
+                        mouse.click(button='left')
+                elif self.fingers == [1,1,1,0,0]:
+                    if self.fingers != self.last_f:
+                        self.y = self.y + abs(self.x2-self.y2)/3.5      
+                        mouse.click(button='right')    
+                                   
+                else:      
                     mouse.release(button='left') 
-                    self.flag2 = False    
+                        
             else:
                 mouse.release(button='left')
                 self.flag = 0
@@ -103,6 +111,14 @@ while True:
     main.usloviay()
     main.upsempling()
     main.control()
+
+
+
+
+
+
+
+
 
 
     
