@@ -10,20 +10,21 @@ detector = HandDetector(detectionCon=0.6, maxHands= 1)
 
 class Program():
     def __init__(self):
-        self.flag = 0
-        self.last_f = 0
-        self.start = 0
-        self.last_time = False
-        self.a = 0
-        self.c = 0
+        self.flag = None
+        self.last_f = None
+        self.sx = None
+        self.sy = None
+        self.mouse_up_down = None
+        
     def Hands(self):
         _, img = cap.read()
         self.hands, img = detector.findHands(img)
         if len(self.hands) == 0:
             self.flag = 0
         else:
+            
             _, _, self.x2, self.y2 = self.hands[0]["bbox"]
-            self.x, self.y = self.hands[0]["center"]
+            self.x, self.y = self.hands[0]["lmList"][0][0:2]
             hand1 = self.hands[0]
             self.fingers = detector.fingersUp(hand1)
             
@@ -52,7 +53,7 @@ class Program():
         if len(self.hands) != 0:
             
                 
-            if self.fingers == [0,0,0,0,0] or self.fingers == [1,0,0,0,0] or self.fingers == [0,1,0,0,0] or self.fingers == [1,1,0,0,0] or self.fingers == [0,1,1,0,0] or self.fingers == [1,1,1,0,0]: 
+            if self.fingers in ([0,0,0,0,0],[1,0,0,0,0],[0,1,0,0,0],[1,1,0,0,0]):
                 if self.flag == 0:
                     self.a1 = self.a
                     self.c1 = self.c
@@ -61,7 +62,7 @@ class Program():
 
 
                 if self.fingers == [0,1,0,0,0] or self.fingers == [1,1,0,0,0]:
-                    self.y = self.y + abs(self.x2-self.y2)/3.5        
+                    
                     if self.last_f != self.fingers:
                         mouse.click(button='left')
                         self.start = time.time()
@@ -69,50 +70,47 @@ class Program():
                     if time.time() - self.start > 0.3:
                         if self.last_time <= 0.3:                     
                             mouse.press(button='left')
+                            self.mouse_up_down = True
                     self.last_time = time.time() - self.start
                                 
-                elif self.fingers == [0,1,1,0,0]:
-                    if self.fingers != self.last_f:               
-                        self.y = self.y + abs(self.x2-self.y2)/3.5             
-                        mouse.click(button='left')
-                        mouse.click(button='left')
-                elif self.fingers == [1,1,1,0,0]:
-                    if self.fingers != self.last_f:
-                        self.y = self.y + abs(self.x2-self.y2)/3.5      
-                        mouse.click(button='right')    
+                
                                    
-                else:      
-                    mouse.release(button='left') 
+                else:
+                    if self.mouse_up_down:
+                        self.mouse_up_down = False   
+                        mouse.release(button='left') 
                         
             else:
-                mouse.release(button='left')
+                
                 self.flag = 0
             self.last_f = self.fingers
         
     def control(self):
-        try:
-            if self.flag == 1:
+        
+        if self.flag == 1:
                 
-                x_new = (self.x - self.a1[0]) * (1920 / self.c1[0])
-                y_new = (self.y - self.a1[1]) * (1080 / self.c1[1])
-                
-                mouse.move(1920-x_new, y_new, absolute=True) 
-                
+            x_new = (self.x - self.a1[0]) * (1920 / self.c1[0])
+            y_new = (self.y - self.a1[1]) * (1080 / self.c1[1])
+            if self.sx is None:
+                self.sx = x_new
+                self.sy = y_new
+            else:
+                self.sx = 0.5 * x_new + 0.5 * self.sx
+                self.sy = 0.5 * y_new + 0.5 * self.sy
+            mouse.move(1920 - self.sx, self.sy, absolute=True)
+                            
                 
                         
-        except:
-            pass
-    
+       
 
 main = Program()
 while True:
     
     main.Hands()
-    main.usloviay()
     main.upsempling()
+    main.usloviay()
+    
     main.control()
-
-
 
 
 
